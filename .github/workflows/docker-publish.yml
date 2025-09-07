@@ -1,0 +1,99 @@
+name: Docker Publish
+
+on:
+  push:
+    branches: [ "main" ]
+  release:
+    types: [published]
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly on Monday at 2 AM UTC
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  check-base-image:
+    runs-on: ubuntu-latest
+    outputs:
+      should-build: ${{ steps.check.outputs.should-build }}
+      base-digest: ${{ steps.check.outputs.base-digest }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check base image digest
+        id: check
+        run: |
+          # Get current digest of base image
+          BASE_DIGEST=$(docker pull miktex/miktex:latest --quiet | grep -o 'sha256:[a-f0-9]*' | head -1)
+
+          # Get stored digest from previous run (if exists)
+          if [ -f .base-image-digest ]; then
+            STORED_DIGEST=$(cat .base-image-digest)
+          else
+            STORED_DIGEST=""
+          fi
+
+          echo "base-digest=$BASE_DIGEST" >> $GITHUB_OUTPUT
+
+          # Check if we should build
+          if [ "$BASE_DIGEST" != "$STORED_DIGEST" ] || [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "should-build=true" >> $GITHUB_OUTPUT
+            echo "Base image updated or manual trigger - rebuilding"
+          else
+            echo "should-build=false" >> $GITHUB_OUTPUT
+            echo "Base image unchanged - skipping build"
+          fi
+
+  build-and-push-image:
+    needs: check-base-image
+    if: needs.check-base-image.outputs.should-build == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Store base image digest
+        run: |
+          echo "${{ needs.check-base-image.outputs.base-digest }}" > .base-image-digest
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noredundant.com"
+          git add .base-image-digest
+          git commit -m "Update base image digest [skip ci]" || echo "No changes to commit"
+          git push
