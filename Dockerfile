@@ -1,18 +1,9 @@
 FROM miktex/miktex:latest
 
-# Finish MiKTeX setup with shared installation
-RUN miktexsetup --shared=yes finish
-
-# Enable automatic package installation
-RUN initexmf --admin --set-config-value [MPM]AutoInstall=1
-
-# Update MikTeX packages
-RUN mpm --admin --update
-
-# Install additional system packages
+# Install additional system packages and remove docs
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends --no-install-suggests \
-    git && \
+    git-core && \
     rm -rf /var/lib/apt/lists/*
 
 # Update font cache
