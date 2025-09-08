@@ -7,7 +7,7 @@ RUN miktexsetup --shared=yes finish
 RUN initexmf --admin --set-config-value [MPM]AutoInstall=1
 
 # Update MikTeX packages
-RUN mpm --admin --update
+RUN miktex packages update
 
 # Install additional system packages
 RUN apt-get update -y && \
