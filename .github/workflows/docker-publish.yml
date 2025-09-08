@@ -2,11 +2,11 @@ name: Docker Publish
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   release:
     types: [published]
   schedule:
-    - cron: '0 2 * * 1'  # Weekly on Monday at 2 AM UTC
+    - cron: "0 2 * * 1" # Weekly on Monday at 2 AM UTC
   workflow_dispatch:
 
 env:
@@ -89,9 +89,13 @@ jobs:
 
       - name: Store base image digest
         run: |
-          echo "${{ needs.check-base-image.outputs.base-digest }}" > .base-image-digest
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add .base-image-digest
-          git commit -m "Update base image digest [skip ci]" || echo "No changes to commit"
-          git push
+          if [[ "${{ github.ref_type }}" == "branch" ]]; then
+            echo "${{ needs.check-base-image.outputs.base-digest }}" > .base-image-digest
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git add .base-image-digest
+            git commit -m "Update base image digest [skip ci]" || echo "No changes to commit"
+            git push
+          else
+            echo "Skipping git push as not on a branch (ref_type: ${{ github.ref_type }})"
+          fi
