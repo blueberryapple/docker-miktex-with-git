@@ -1,5 +1,7 @@
 # docker-miktex-with-git
 
+![Image Size](https://badges-ghcr-4gu5.onrender.com/blueberryapple/docker-miktex-with-git/size?color=%233d9e18&tag=latest&label=size&trim=)
+
 Docker image with miktex and git so it is the smallest image size possible while still having git and be a drop in image to run on GitHub Actions
 
 ## Example usage
