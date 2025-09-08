@@ -1,7 +1,5 @@
 # docker-miktex-with-git
 
-![Docker Image Size](https://img.shields.io/docker/image-size/ghcr.io/blueberryapple/docker-miktex-with-git/latest)
-
 Docker image with miktex and git so it is the smallest image size possible while still having git and be a drop in image to run on GitHub Actions
 
 ## Example usage
