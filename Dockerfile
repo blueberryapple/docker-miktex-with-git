@@ -8,7 +8,6 @@ RUN initexmf --admin --set-config-value [MPM]AutoInstall=1
 
 # Update MikTeX packages
 RUN miktex --admin packages update
-RUN miktex --admin packages install amsfonts
 
 # Install additional system packages
 RUN apt-get update -y && \
