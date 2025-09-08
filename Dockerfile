@@ -12,9 +12,11 @@ RUN mpm --admin --update
 # Install additional system packages
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends --no-install-suggests \
-    git \
-    fc-cache -f -v && \
+    git && \
     rm -rf /var/lib/apt/lists/*
+
+# Update font cache
+RUN fc-cache -f -v
 
 # Set environment variables for MiKTeX
 ENV PATH="/usr/local/bin:$PATH"
