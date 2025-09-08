@@ -6,13 +6,15 @@ RUN miktexsetup --shared=yes finish
 # Enable automatic package installation
 RUN initexmf --admin --set-config-value [MPM]AutoInstall=1
 
+# Update MikTeX packages
+RUN mpm --admin --update
+
 # Install additional system packages
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends --no-install-suggests \
-    git && \
+    git \
     fc-cache -f -v && \
     rm -rf /var/lib/apt/lists/*
-
 
 # Set environment variables for MiKTeX
 ENV PATH="/usr/local/bin:$PATH"
