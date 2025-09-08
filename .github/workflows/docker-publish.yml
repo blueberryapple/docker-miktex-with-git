@@ -27,7 +27,7 @@ jobs:
         id: check
         run: |
           # Get current digest of base image
-          BASE_DIGEST=$(docker pull miktex/miktex:latest --quiet | grep -o 'sha256:[a-f0-9]*' | head -1)
+          BASE_DIGEST=$(docker pull miktex/miktex:latest | grep -o 'sha256:[a-f0-9]*' | head -1)
 
           # Get stored digest from previous run (if exists)
           if [ -f .base-image-digest ]; then
@@ -91,7 +91,7 @@ jobs:
         run: |
           echo "${{ needs.check-base-image.outputs.base-digest }}" > .base-image-digest
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noredundant.com"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add .base-image-digest
           git commit -m "Update base image digest [skip ci]" || echo "No changes to commit"
           git push
