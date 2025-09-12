@@ -1,5 +1,9 @@
 FROM miktex/miktex:latest
 
+# Disable file system watcher to avoid interrupted system calls
+ENV MIKTEX_ENABLE_FILESYSTEMWATCHER=0
+RUN initexmf --admin --set-config-value [internal]enableFileSystemWatcher=false
+
 # Finish MiKTeX setup with shared installation
 RUN miktexsetup --shared=yes finish
 
