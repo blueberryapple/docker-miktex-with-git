@@ -19,10 +19,10 @@ RUN apt-get update -y && \
 RUN miktexsetup --shared=yes finish && \
     initexmf --admin --set-config-value [MPM]AutoInstall=1 && \
     echo "--- Updating global MiKTeX packages ---" && \
-    retry --tries=3 --delay=10 --factor=3 -- \
+    retry -t 3 -s 10 -- \
     timeout 600 miktex --admin packages update && \
     echo "--- Updating local MiKTeX packages ---" && \
-    retry --tries=3 --delay=10 --factor=3 -- \
+    retry -t 3 -s 10 -- \
     timeout 600 miktex packages update && \
     echo "--- Verifying package updates ---" && \
     miktex --version && \
