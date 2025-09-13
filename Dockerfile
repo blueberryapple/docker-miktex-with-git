@@ -63,8 +63,8 @@ RUN fc-cache -f -v
 
 # Set environment variables for MiKTeX
 ENV PATH="/usr/local/bin:$PATH"
-# Use minimal Qt platform for headless GitHub Actions environment
-ENV QT_QPA_PLATFORM=minimal
+# Use offscreen Qt platform for headless environment
+ENV QT_QPA_PLATFORM=offscreen
 ENV QT_QPA_PLATFORM_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/qt5/plugins/platforms
 ENV XDG_RUNTIME_DIR=/tmp/runtime-root
 # Additional headless settings
