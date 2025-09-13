@@ -1,10 +1,10 @@
 FROM miktex/miktex:latest
 
 # Finish MiKTeX setup with shared installation
-RUN miktexsetup finish
+RUN miktexsetup --shared=yes finish
 
 # Enable automatic package installation
-RUN initexmf --set-config-value [MPM]AutoInstall=1
+RUN initexmf --admin --set-config-value [MPM]AutoInstall=1
 
 # Update MikTeX packages with exponential backoff retry mechanism
 # Retry logic with exponential backoff is needed because MiKTeX package updates can fail with "Interrupted system call"
@@ -14,7 +14,7 @@ RUN attempt=1; \
     max_attempts=3; \
     while [ $attempt -le $max_attempts ]; do \
         echo "Attempt $attempt of $max_attempts - Updating MiKTeX packages"; \
-        if timeout 600 miktex packages update; then \
+        if timeout 600 miktex --admin packages update; then \
             echo "Package update successful on attempt $attempt"; \
             break; \
         else \
