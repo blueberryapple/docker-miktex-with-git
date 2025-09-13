@@ -19,11 +19,17 @@ RUN apt-get update -y && \
 RUN miktexsetup --shared=yes finish && \
     initexmf --admin --set-config-value [MPM]AutoInstall=1 && \
     echo "--- Updating global MiKTeX packages ---" && \
-    retry -t 3 -d 10 -- \
-    timeout 600 miktex --admin packages update && \
+    RETRY_GLOBAL_OUTPUT=$(retry -t 3 -d 10 -- timeout 600 miktex --admin packages update 2>&1) && \
+    echo "$RETRY_GLOBAL_OUTPUT" && \
+    if echo "$RETRY_GLOBAL_OUTPUT" | grep -q "invalid option"; then \
+        echo "Error: retry command used with invalid options during global package update." && exit 1; \
+    fi && \
     echo "--- Updating local MiKTeX packages ---" && \
-    retry -t 3 -d 10 -- \
-    timeout 600 miktex packages update && \
+    RETRY_LOCAL_OUTPUT=$(retry -t 3 -d 10 -- timeout 600 miktex packages update 2>&1) && \
+    echo "$RETRY_LOCAL_OUTPUT" && \
+    if echo "$RETRY_LOCAL_OUTPUT" | grep -q "invalid option"; then \
+        echo "Error: retry command used with invalid options during local package update." && exit 1; \
+    fi && \
     echo "--- Verifying package updates ---" && \
     miktex --version && \
     initexmf --report || echo "Update verification completed"
